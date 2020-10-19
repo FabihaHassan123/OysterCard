@@ -18,5 +18,31 @@ describe Oystercard do
     end
   end
 
+  describe "#deduct" do
+    it "deducts the specified amount from balance" do
+      subject.top_up(15)
+      expect(subject.deduct(5)).to eq 10
+    end
+  end
+
+  describe "#in_journey?" do
+    it "returns true if the user is in journey" do
+      subject.touch_in
+      expect(subject.in_journey?).to eq true
+    end
+  end
+
+  describe "#touch_in" do
+    it "changes the status to in use" do
+      expect(subject.touch_in).to eq "in use"
+    end
+  end
+
+  describe "#touch_out" do
+    it "changes the status to not in use" do
+      expect(subject.touch_out).to eq "not in use"
+    end
+  end
+
 
 end
