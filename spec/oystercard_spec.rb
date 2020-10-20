@@ -3,6 +3,7 @@ require "Oystercard"
 describe Oystercard do
 
   let(:entry_station) { "Paddington" }
+  let(:exit_station) { "Bank" }
 
   before { subject.balance = 2 }
 
@@ -48,15 +49,31 @@ describe Oystercard do
       subject.touch_in(entry_station)
       expect(subject.entry_station).to eq "Paddington"
     end
+    it "creates a journey" do
+      subject.touch_in(entry_station)
+      expect(subject.history[-1]).to eq ({})
+    end
   end
 
   describe "#touch_out" do
     it "deducts fare when journey is complete" do
-      expect { subject.touch_out }.to change { subject.balance }.by(-1)
+      subject.touch_in(entry_station)
+      expect { subject.touch_out(exit_station) }.to change { subject.balance }.by(-1)
     end
     it "changes the entry_station to nil" do
       subject.touch_in(entry_station)
-      expect { subject.touch_out }.to change { subject.entry_station }.to nil
+      expect { subject.touch_out(exit_station) }.to change { subject.entry_station }.to nil
+    end
+    it "creates one journey" do
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.history).to eq [{"Paddington"=>"Bank"}]
+    end
+  end
+
+  describe "#journey_history" do
+    it "logs the journey history" do
+      expect(subject.journey_history).to eq subject.history
     end
   end
 
