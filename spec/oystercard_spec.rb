@@ -18,15 +18,16 @@ describe Oystercard do
     end
   end
 
-  describe "#deduct" do
-    it "deducts the specified amount from balance" do
-      subject.top_up(15)
-      expect(subject.deduct(5)).to eq 10
-    end
-  end
+  # describe "#deduct" do
+  #   it "deducts the specified amount from balance" do
+  #     subject.top_up(15)
+  #     expect(subject.deduct(5)).to eq 10
+  #   end
+  # end
 
   describe "#in_journey?" do
     it "returns true if the user is in journey" do
+      subject.top_up(2)
       subject.touch_in
       expect(subject.in_journey?).to eq true
     end
@@ -34,7 +35,11 @@ describe Oystercard do
 
   describe "#touch_in" do
     it "changes the status to in use" do
+      subject.top_up(2)
       expect(subject.touch_in).to eq "in use"
+    end
+    it "raises error if insufficient funds on card" do
+      expect { subject.touch_in }.to raise_error("insufficient funds.")
     end
   end
 
@@ -42,7 +47,9 @@ describe Oystercard do
     it "changes the status to not in use" do
       expect(subject.touch_out).to eq "not in use"
     end
+    it "deducts fare when journey is complete" do
+      expect { subject.touch_out }.to change { subject.balance }.by(-1)
+    end
   end
-
 
 end
