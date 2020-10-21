@@ -9,8 +9,7 @@ describe Oystercard do
 
   describe "#view_balance" do
     it "calls the method to view the balance" do
-
-      expect(subject.balance).to eq 2
+      expect(subject.view_balance).to eq 2
     end
   end
 
@@ -26,20 +25,6 @@ describe Oystercard do
     end
   end
 
-  # describe "#deduct" do
-  #   it "deducts the specified amount from balance" do
-  #     subject.top_up(15)
-  #     expect(subject.deduct(5)).to eq 10
-  #   end
-  # end
-
-  describe "#in_journey?" do
-    it "returns true if the user is in journey" do
-      subject.touch_in(entry_station)
-      expect(subject.in_journey?).to eq true
-    end
-  end
-
   describe "#touch_in" do
     it "raises error if insufficient funds on card" do
       subject.balance = 0
@@ -47,28 +32,36 @@ describe Oystercard do
     end
     it "remembers the station name when touching in" do
       subject.touch_in(entry_station)
-      expect(subject.entry_station).to eq "Paddington"
+      expect(subject.current_journey.entry_station).to eq "Paddington"
     end
     it "creates a journey" do
       subject.touch_in(entry_station)
-      expect(subject.history[-1]).to eq ({})
+      expect(subject.current_journey).not_to eq nil
     end
   end
 
   describe "#touch_out" do
-    it "deducts fare when journey is complete" do
+    it "deducts minimum fare when journey is complete" do
       subject.touch_in(entry_station)
       expect { subject.touch_out(exit_station) }.to change { subject.balance }.by(-1)
     end
-    it "changes the entry_station to nil" do
-      subject.touch_in(entry_station)
-      expect { subject.touch_out(exit_station) }.to change { subject.entry_station }.to nil
+    it "deducts penalty fare when journey is complete" do
+      expect { subject.touch_out(exit_station) }.to change { subject.balance }.by(-6)
     end
-    it "creates one journey" do
+    it "changes the exit_station to the exit station given" do
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.history).to eq [{"Paddington"=>"Bank"}]
+      expect(subject.history[-1].exit_station).to eq "Bank"
     end
+    it "updates the history with the current journey" do
+      subject.touch_in(entry_station)
+      expect { subject.touch_out(exit_station) }.to change { subject.history.count }.by(1)
+    end
+    it "sets the current journey back to nil" do
+      subject.touch_in(entry_station)
+      expect { subject.touch_out(exit_station) }.to change {subject.current_journey}.to(nil)
+    end
+
   end
 
   describe "#journey_history" do
@@ -76,5 +69,12 @@ describe Oystercard do
       expect(subject.journey_history).to eq subject.history
     end
   end
+
+  # describe "#deduct" do
+  #   it "deducts the specified amount from balance" do
+  #     subject.top_up(15)
+  #     expect(subject.deduct(5)).to eq 10
+  #   end
+  # end
 
 end
